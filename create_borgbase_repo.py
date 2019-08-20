@@ -8,32 +8,14 @@ import os.path
 
 # Define the parser
 parser = argparse.ArgumentParser(description='Borgbase Repo Creator')
-parser.add_argument('-username', action="store", dest='username', default=0)
-parser.add_argument('-password', action="store", dest='password', default=0)
+parser.add_argument('-token', action="store", dest='token', default=0)
 parser.add_argument('-hostname', action="store", dest='hostname', default=0)
 args = parser.parse_args()
 
 if len(sys.argv) < 4:
-    sys.stderr.write("Required Arguments: -username bob -password 123456 -hostname localhost")
+    sys.stderr.write("Required Arguments: -token xx.yy.zz -hostname localhost")
     sys.exit(1)
 
-LOGIN = '''
-mutation login(
-  $email: String!
-  $password: String!
-  $otp: String
-  ) {
-    login(
-      username: $email
-      password: $password
-      otp: $otp
-    ) {
-      user {
-        id
-      }
-    }
-}
-'''
 
 REPO_DETAILS = '''
 query repoList {
@@ -100,12 +82,9 @@ mutation repoAdd(
 '''
 
 class GraphQLClient:
-    def __init__(self, endpoint='https://api.borgbase.com/graphql'):
+    def __init__(self, token, endpoint='https://api.borgbase.com/graphql'):
         self.endpoint = endpoint
-        self.session = requests.session()
-
-    def login(self, **kwargs):
-        return self._send(LOGIN, kwargs)
+        self.token = token
 
     def execute(self, query, variables=None):
         return self._send(query, variables)
@@ -114,7 +93,9 @@ class GraphQLClient:
         data = {'query': query,
                 'variables': variables}
         headers = {'Accept': 'application/json',
-                   'Content-Type': 'application/json'}
+                   'Content-Type': 'application/json',
+                   "Authorization": "Bearer " + self.token,
+                   }
 
         request = self.session.post(self.endpoint, json=data, headers=headers)
 
@@ -126,8 +107,7 @@ class GraphQLClient:
 # get short hostname
 hostname = args.hostname
 
-client = GraphQLClient()
-client.login(email=args.username, password=args.password)
+client = GraphQLClient(args.token)
 
 # check if repo already exists at borgbase with name of hostname
 res = client.execute(REPO_DETAILS)
