@@ -5,10 +5,7 @@ Don't forget to set the following in the playbook:
 
 ```
     borg_source_directories:
-      - /srv/www
-      - /var/lib/automysqlbackup
-    borg_exclude_patterns:
-      - /srv/www/old-sites
+      - /home/virtual
     borg_retention_policy:
       keep_hourly: 3
       keep_daily: 7
