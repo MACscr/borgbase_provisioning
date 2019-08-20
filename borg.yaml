@@ -1,0 +1,56 @@
+- hosts: apnscp
+
+  vars_prompt:
+
+    - name: borgbase_username
+      prompt: "Borgbase Username"
+      private: no
+
+    - name: borgbase_password
+      prompt: "Borgbase Password"
+
+  pre_tasks:
+
+    - pip:
+        name: requests
+        virtualenv: /ansible_launchpad
+
+    - pip:
+        name: urllib3
+        virtualenv: /ansible_launchpad
+
+    - debug:
+        msg: -username "{{ borgbase_username }}" -password "{{ borgbase_password }}" -hostname "{{ ansible_hostname }}"
+
+    - name: create repo and ssh key
+      script: /etc/ansible/files/create_borgbase_repo.py -username "{{ borgbase_username }}" -password "{{ borgbase_password }}" -hostname "{{ ansible_hostname }}"
+      register: output
+
+    - debug: var=output.stdout_lines
+
+    - name: do facts module to get latest information
+      setup:
+
+  vars:
+    borgbase_host: "{{ ansible_local['borgbase_repo'].split('@')[1] | replace(':repo', '') }}"
+
+  roles:
+  - role: borgbackup
+    borg_encryption_passphrase: "{{ borg_passphrase }}"
+    borg_repository: "{{ ansible_local['borgbase_repo'] }}"
+    borg_source_directories:
+      - /home/virtual
+    borg_retention_policy:
+      keep_hourly: 3
+      keep_daily: 7
+      keep_weekly: 4
+      keep_monthly: 6
+
+  post_tasks:
+  - name: ensure borg repo is a known host
+    known_hosts:
+      name: "{{ borgbase_host }}"
+      key: "{{ lookup('pipe', 'ssh-keyscan -t ed25519 {{ borgbase_host }}') }}"
+
+  - name: initialize borg repo
+    shell: borgmatic init --encryption=repokey-blake2
