@@ -20,6 +20,8 @@ Example playbook settings. I use these for my APNSCP servers:
 
 The 'borg_passphrase' variable is set in /etc/hosts like so:
 
+```
 [apnscp]
 cp3.example.com borg_passphrase='T#gg43522%#fj9k'
-cp3.example.com borg_passphrase='GEgd4%7774$AeLv6'
+cp4.example.com borg_passphrase='GEgd4%7774$AeLv6'
+```
