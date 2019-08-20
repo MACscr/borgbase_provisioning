@@ -6,6 +6,8 @@ Don't forget to set the following in the playbook:
 ```
     borg_source_directories:
       - /home/virtual
+    borg_exclude_patterns:
+      - /srv/www/old-sites
     borg_retention_policy:
       keep_hourly: 3
       keep_daily: 7
