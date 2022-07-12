@@ -18,7 +18,7 @@ Example playbook settings. I use these for my APNSCP servers:
       keep_monthly: 6
  ```
 
-The 'borg_passphrase' variable is set in /etc/hosts like so:
+The 'borg_passphrase' variable is set in /etc/ansible/hosts like so:
 
 ```
 [apnscp]
